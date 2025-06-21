@@ -56,6 +56,10 @@
                 elapsedSec = (nowMs - thenMs)/msPerSec;
                 thenMs = nowMs;
 
+                x += elapsedSec * vx;
+                vy += ay * elapsedSec;
+                y += elapsedSec * vy;
+                
                 // prevent going off edge
                 if(x - radius < 0) {
                     x = radius;
@@ -73,9 +77,6 @@
                     y = canvas.height - radius;
                     vy = -vy;
                 }
-                x += elapsedSec * vx;
-                vy += ay * elapsedSec;
-                y += elapsedSec * vy;
 
                 render();
             }
