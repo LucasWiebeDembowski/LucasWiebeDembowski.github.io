@@ -11,6 +11,7 @@
             let y = canvas.height/2;
             let vx = 100; // pixels per second
             let vy = 200;
+            let ay = 2000; // pixels per second per second
             let radius = 40; // pixels
             
             document.addEventListener('keyup', (event) => {
@@ -29,7 +30,6 @@
                         break;
                     default: break;
                 }
-                // render();
             });
 
             function render() {
@@ -73,8 +73,9 @@
                     y = canvas.height - radius;
                     vy = -vy;
                 }
-                x = x + elapsedSec * vx;
-                y = y + elapsedSec * vy;
+                x += elapsedSec * vx;
+                vy += ay * elapsedSec;
+                y += elapsedSec * vy;
 
                 render();
             }
