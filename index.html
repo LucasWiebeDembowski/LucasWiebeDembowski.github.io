@@ -53,7 +53,8 @@
             function update(timestampMs) {
                 requestAnimationFrame(update);
                 nowMs = Date.now();
-                elapsedSec = (nowMs - thenMs)/msPerSec;
+                const frameTimeSecCap = 0.05; // arbitrary
+                elapsedSec = ((nowMs - thenMs)/msPerSec) % frameTimeSecCap;
                 thenMs = nowMs;
 
                 x += elapsedSec * vx;
