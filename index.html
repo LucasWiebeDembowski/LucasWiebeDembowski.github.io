@@ -72,6 +72,8 @@
                 thenMs = nowMs;
 
                 x += elapsedSec * vx;
+                // TODO calculate vy correctly here,
+                // vy is only accelerating until it bounces, after which it is decelerating.
                 vy += ay * elapsedSec;
                 y += elapsedSec * vy;
                 
@@ -88,8 +90,9 @@
                     y = radius;
                     vy = -vy;
                 }
-                if (y + radius > canvas.height) {
-                    y = canvas.height - radius;
+                const diff = y + radius - canvas.height;
+                if (diff > 0) {
+                    y = canvas.height - radius - diff;
                     vy = -vy;
                 }
 
