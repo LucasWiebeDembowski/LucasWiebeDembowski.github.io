@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html>
     <body>
+        <p id = pauseState>Play</p>
         <canvas id="myCanvas" width="600" height="600" style="border: 1px solid #d3d3d3;">
             Your browser does not support HTML canvas tag :(
         </canvas>
@@ -34,6 +35,7 @@
                         break;
                     case 'p':
                         paused = !paused;
+                        document.getElementById('pauseState').textContent = paused ? "Paused" : "Play";
                         const vxTmp = vx;
                         const vyTmp = vy;
                         vx = paused ? 0 : vxCached;
