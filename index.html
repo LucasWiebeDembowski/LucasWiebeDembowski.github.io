@@ -9,9 +9,13 @@
             const ctx = canvas.getContext("2d");
             let x = canvas.width/2;
             let y = canvas.height/2;
-            let vx = 100; // pixels per second
-            let vy = 200;
-            let ay = 2000; // pixels per second per second
+            let vxCached = 100; // pixels per second
+            let vyCached = 200;
+            let vx = vxCached; // pixels per second
+            let vy = vyCached;
+            let paused = false;
+            let ayCached = 2000; // pixels per second per second
+            let ay = ayCached;
             let radius = 40; // pixels
             
             document.addEventListener('keyup', (event) => {
@@ -27,6 +31,16 @@
                         break;
                     case 'ArrowDown':
                         y = y + 30;
+                        break;
+                    case 'p':
+                        paused = !paused;
+                        const vxTmp = vx;
+                        const vyTmp = vy;
+                        vx = paused ? 0 : vxCached;
+                        vy = paused ? 0 : vyCached;
+                        ay = paused ? 0 : ayCached;
+                        vxCached = vxTmp;
+                        vyCached = vyTmp;
                         break;
                     default: break;
                 }
