@@ -55,12 +55,8 @@
                 ctx.stroke();
             }
 
-            const FPS = 60; // Doesn't change FPS
             const msPerSec = 1000;
-            const frameTimeMs = msPerSec / FPS;
 
-            var time = 0; //time in seconds, actual floating point value.
-            var delta = 0;
             function start() {
                 requestAnimationFrame(update);
                 thenMs = Date.now();
