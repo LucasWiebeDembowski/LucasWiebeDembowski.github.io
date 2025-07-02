@@ -19,33 +19,14 @@
 
                 font-size: medium;
             }
-            .pauseButtonTooltip .tooltiptext {
-                /* https://www.w3schools.com/css/css_tooltip.asp */
-                visibility: hidden;
-                width: 400px;
-                background-color: grey;
-                color: #fff;
-                text-align: center;
-                border-radius: 6px;
-                padding: 5px 0;
-
-                position: absolute;
-                z-index: 1;
-            }
-            .pauseButtonTooltip:hover .tooltiptext {
-                visibility: visible;
-            }
         </style>
     </head>
     <body>
         <p>
-            <div class="pauseButtonTooltip">
-            <button id="btnPause" class="button" type="button" onclick="togglePaused()">
+            <button title="Play/Pause game (p)" id="btnPause" class="button" type="button" onclick="togglePaused()">
                 <span id="pauseButtonName" class="material-symbols-outlined">pause</span>
                 <span id="pauseButtonText"><u>P</u>ause</span>
             </button>
-            <span class="tooltiptext">You can also press p to play or pause the game.</span>
-            </div>
         </p>
         <canvas id="myCanvas" width="600" height="600" style="border: 1px solid #d3d3d3;">
             Your browser does not support HTML canvas tag :(
