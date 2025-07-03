@@ -1,6 +1,21 @@
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
-const gravity = 2000; // pixels per second per second
+
+let gravity = 2000; // pixels per second per second
+let gravitySlider = document.getElementById("gravitySlider");
+let gravityLabel = document.getElementById("gravityLabel");
+gravityLabel.innerHTML = "Gravity [px/s&sup2;]: "+gravitySlider.value;
+gravitySlider.oninput = function() {
+    gravityLabel.innerHTML = "Gravity [px/s&sup2;]: "+this.value;
+    gravity = this.value;
+    for(obj of objects) {
+        if(paused) {
+            obj.ayCached = gravity;
+        }else {
+            obj.ay = gravity;
+        }
+    }
+}
 
 class Circle {
     constructor(x,y,vx,vy,radius) {
@@ -45,6 +60,7 @@ class Circle {
             // vy is only accelerating until it bounces, after which it is decelerating.
             const distanceAboveGround = canvas.height - (this.y + this.radius);
             let vground = Math.sqrt(this.vy*this.vy + 2*this.ay*distanceAboveGround);
+            // TODO allow 0 gravity without dividing by 0
             let trise = elapsedSec - (vground - this.vy) / this.ay;
             this.vy = -vground + this.ay*trise;
             this.y = canvas.height - this.radius - (vground*trise - 0.5*this.ay*trise*trise);
@@ -121,5 +137,8 @@ function update(timestampMs) {
     
     render();
 }
+
+gravitySlider.value=2000;
+gravitySlider.oninput();
 
 start();
