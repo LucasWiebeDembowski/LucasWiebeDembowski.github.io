@@ -24,6 +24,7 @@ class Circle {
         this.vx = vx;
         this.vy = vy;
         this.radius = radius;
+        this.mass = Math.PI*radius**2
         this.vxCached = vx;
         this.vyCached = vy;
         this.ay = gravity;
@@ -56,7 +57,6 @@ class Circle {
 
         if(gravity == 0) {
             this.y += elapsedSec * this.vy;
-            console.log("no gravity");
             if(this.y + this.radius > canvas.height) {
                 // Bounce off the ground.
                 this.y = canvas.height - this.radius;
@@ -95,6 +95,7 @@ let paused = false;
 let objects = []
 objects.push(new Circle(0.5*canvas.width, 0.5*canvas.height, 100, 100, 40))
 objects.push(new Circle(0.25*canvas.width, 0.25*canvas.height, 100, 200, 60))
+objects.push(new Circle(0.75*canvas.width, 0.25*canvas.height, 100, 500, 50))
 function togglePaused() {
     paused = !paused;
     document.getElementById('pauseButtonName').innerHTML = paused ? "play_arrow" : "pause";
@@ -140,6 +141,41 @@ function update(timestampMs) {
     elapsedSec = ((nowMs - thenMs)/msPerSec) % frameTimeSecCap;
     thenMs = nowMs;
 
+    for(let i = 0; i < objects.length; i++) {
+        for(let j = i + 1; j < objects.length; j++) {
+            const x1 = objects[i].x;
+            const y1 = objects[i].y;
+            const x2 = objects[j].x;
+            const y2 = objects[j].y;
+            const r2 = (x2-x1)**2 + (y2-y1)**2;
+            if(r2 <= (objects[i].radius + objects[j].radius)**2) {
+                const v1xi = objects[i].vx;
+                const v1yi = objects[i].vy;
+                const v2xi = objects[j].vx;
+                const v2yi = objects[j].vy;
+                const m1 = objects[i].mass;
+                const m2 = objects[j].mass;
+                // https://en.wikipedia.org/wiki/Elastic_collision#Two-dimensional_collision_with_two_moving_objects
+                // Assumes no friction or rotation.
+                const dotProductOverR2 = ((v1xi-v2xi)*(x1-x2) + (v1yi-v2yi)*(y1-y2))/r2;
+                objects[i].vx = v1xi - (2*m2/(m1+m2))*dotProductOverR2*(x1-x2);
+                objects[i].vy = v1yi - (2*m2/(m1+m2))*dotProductOverR2*(y1-y2);
+                objects[j].vx = v2xi - (2*m1/(m1+m2))*dotProductOverR2*(x2-x1);
+                objects[j].vy = v2yi - (2*m1/(m1+m2))*dotProductOverR2*(y2-y1);
+
+                // Move the first object so they are no longer colliding.
+                // Need this because if the distance travelled in the next frame is not enough to move the
+                // spheres outside of each other then the collision code will run again in the next frame
+                // and reverse their directions again which leads to spheres' appearing to get
+                // hooked on each other at the boundaries.
+                const r = Math.sqrt(r2);
+                const distance = objects[i].radius + objects[j].radius - r;
+                const v = Math.sqrt((objects[i].vx)**2 + (objects[i].vy)**2);
+                objects[i].x += distance * objects[i].vx / v;
+                objects[i].y += distance * objects[i].vy / v;
+            }
+        }
+    }
     for(const obj of objects) {
         obj.update(elapsedSec);
     }
