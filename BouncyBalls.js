@@ -1,7 +1,7 @@
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
 
-let gravity = 2000; // pixels per second per second
+let gravity = 0; // pixels per second per second
 let gravitySlider = document.getElementById("gravitySlider");
 let gravityLabel = document.getElementById("gravityLabel");
 gravityLabel.innerHTML = "Gravity [px/s&sup2;]: "+gravitySlider.value;
@@ -45,7 +45,7 @@ class Circle {
     update(elapsedSec) {
         this.x += elapsedSec * this.vx;
         // prevent going off edge
-        if(this.x -this. radius < 0) {
+        if(this.x -this.radius < 0) {
             this.x = this.radius;
             this.vx = -this.vx;
         }
@@ -54,19 +54,28 @@ class Circle {
             this.vx = -this.vx;
         }
 
-        this.vy += this.ay * elapsedSec;
-        // Bounce off the ground.
-        if(this.vy > 0 && (this.y + elapsedSec * this.vy + this.radius > canvas.height)) {
-            // vy is only accelerating until it bounces, after which it is decelerating.
-            const distanceAboveGround = canvas.height - (this.y + this.radius);
-            let vground = Math.sqrt(this.vy*this.vy + 2*this.ay*distanceAboveGround);
-            // TODO allow 0 gravity without dividing by 0
-            let trise = elapsedSec - (vground - this.vy) / this.ay;
-            this.vy = -vground + this.ay*trise;
-            this.y = canvas.height - this.radius - (vground*trise - 0.5*this.ay*trise*trise);
-        }else {
-            // Falling normally
+        if(gravity == 0) {
             this.y += elapsedSec * this.vy;
+            console.log("no gravity");
+            if(this.y + this.radius > canvas.height) {
+                // Bounce off the ground.
+                this.y = canvas.height - this.radius;
+                this.vy = -this.vy;
+            }
+        }else {
+            this.vy += this.ay * elapsedSec;
+            // Bounce off the ground.
+            if(this.vy > 0 && (this.y + elapsedSec * this.vy + this.radius > canvas.height)) {
+                // vy is only accelerating until it bounces, after which it is decelerating.
+                const distanceAboveGround = canvas.height - (this.y + this.radius);
+                let vground = Math.sqrt(this.vy*this.vy + 2*this.ay*distanceAboveGround);
+                let trise = elapsedSec - (vground - this.vy) / this.ay;
+                this.vy = -vground + this.ay*trise;
+                this.y = canvas.height - this.radius - (vground*trise - 0.5*this.ay*trise*trise);
+            }else {
+                // Falling normally
+                this.y += elapsedSec * this.vy;
+            }
         }
 
         // prevent going past the top
@@ -84,8 +93,8 @@ class Circle {
 
 let paused = false;
 let objects = []
-objects.push(new Circle(0.5*canvas.width, 0.5*canvas.height, 100, 0, 40))
-objects.push(new Circle(0.25*canvas.width, 0.25*canvas.height, 100, 0, 60))
+objects.push(new Circle(0.5*canvas.width, 0.5*canvas.height, 100, 100, 40))
+objects.push(new Circle(0.25*canvas.width, 0.25*canvas.height, 100, 200, 60))
 function togglePaused() {
     paused = !paused;
     document.getElementById('pauseButtonName').innerHTML = paused ? "play_arrow" : "pause";
@@ -138,7 +147,7 @@ function update(timestampMs) {
     render();
 }
 
-gravitySlider.value=2000;
+gravitySlider.value=gravity;
 gravitySlider.oninput();
 
 start();
