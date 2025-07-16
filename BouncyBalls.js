@@ -1,7 +1,7 @@
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
 
-let gravity = 0; // pixels per second per second
+let gravity = 3000; // pixels per second per second, maximum value is in the slidecontainer in index.html
 let gravitySlider = document.getElementById("gravitySlider");
 let gravityLabel = document.getElementById("gravityLabel");
 gravityLabel.innerHTML = "Gravity [px/s&sup2;]: "+gravitySlider.value;
@@ -88,14 +88,14 @@ class Circle {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
         ctx.stroke();
+        ctx.fillStyle = "#777777";
+        ctx.fill();
     }
 }
 
 let paused = false;
 let objects = []
-objects.push(new Circle(0.5*canvas.width, 0.5*canvas.height, 100, 100, 40))
-objects.push(new Circle(0.25*canvas.width, 0.25*canvas.height, 100, 200, 60))
-objects.push(new Circle(0.75*canvas.width, 0.25*canvas.height, 100, 500, 50))
+
 function togglePaused() {
     paused = !paused;
     document.getElementById('pauseButtonName').innerHTML = paused ? "play_arrow" : "pause";
@@ -120,11 +120,36 @@ document.addEventListener('keyup', (event) => {
     }
 });
 
+const rectHeight = 150;
+const rectWidth = 50;
+const rectX = -0.5*rectWidth;
+const rectY = canvas.height - rectHeight;
+const rectRotation = Math.PI/6.0; // clockwise
+function fireCannon() {
+    if(!paused) {
+        // x-position of rectangle is at the leftmost edge, but x-position of circle is at the center.
+        objects.push(new Circle(
+            rectX + 0.5*rectWidth + rectHeight*Math.sin(rectRotation), // rotated rectangle's height becomes hypotenuse
+            rectY + rectHeight - rectHeight*Math.cos(rectRotation),
+            10*rectHeight*Math.sin(rectRotation),
+            -10*rectHeight*Math.cos(rectRotation),
+            50))
+    }
+}
+
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for(obj of objects) {
         obj.render();
     }
+    
+    ctx.save(); // (https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Basic_animations)
+    ctx.translate(0, canvas.height); // translate to bottom left
+    ctx.rotate(rectRotation);
+    ctx.translate(-0, -canvas.height);
+    ctx.fillStyle = "#90A0B0";
+    ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
+    ctx.restore();
 }
 
 const msPerSec = 1000;
@@ -141,6 +166,7 @@ function update(timestampMs) {
     elapsedSec = ((nowMs - thenMs)/msPerSec) % frameTimeSecCap;
     thenMs = nowMs;
 
+    // Handle collisions
     for(let i = 0; i < objects.length; i++) {
         for(let j = i + 1; j < objects.length; j++) {
             const x1 = objects[i].x;
@@ -166,7 +192,7 @@ function update(timestampMs) {
                 // Move the first object so they are no longer colliding.
                 // Need this because if the distance travelled in the next frame is not enough to move the
                 // spheres outside of each other then the collision code will run again in the next frame
-                // and reverse their directions again which leads to spheres' appearing to get
+                // and reverse their directions again which leads to spheres appearing to get
                 // hooked on each other at the boundaries.
                 const r = Math.sqrt(r2);
                 const distance = objects[i].radius + objects[j].radius - r;

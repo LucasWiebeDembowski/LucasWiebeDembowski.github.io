@@ -1,4 +1,6 @@
 .button {
+    vertical-align: top;
+    height: 50px;
     display: inline-flex;
     align-items: center;
     justify-content: center;

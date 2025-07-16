@@ -13,12 +13,15 @@
                 <span id="pauseButtonName" class="material-symbols-outlined">pause</span>
                 <span id="pauseButtonText"><u>P</u>ause</span>
             </button>
+            <button title="Fire cannon" id="btnCannon" class="button" type="button" onclick="fireCannon()">
+                <span id="pauseButtonName" class="material-symbols-outlined"></span>Fire
+            </button>
             <div id="gravityLabel"></div>
             <div class="slidecontainer">
                 <input type="range" min="0" max="5000" class="slider" id="gravitySlider">
             </div>
         </p>
-        <canvas id="myCanvas" width="600" height="600" style="border: 1px solid #d3d3d3;">
+        <canvas id="myCanvas" width="1000" height="600" style="border: 1px solid #d3d3d3;">
             Your browser does not support HTML canvas tag :(
         </canvas>
         <script src="BouncyBalls.js"></script>
