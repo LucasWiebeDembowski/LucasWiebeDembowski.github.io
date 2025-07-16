@@ -4,9 +4,8 @@ const ctx = canvas.getContext("2d");
 let gravity = 3000; // pixels per second per second, maximum value is in the slidecontainer in index.html
 let gravitySlider = document.getElementById("gravitySlider");
 let gravityLabel = document.getElementById("gravityLabel");
-gravityLabel.innerHTML = "Gravity [px/s&sup2;]: "+gravitySlider.value;
 gravitySlider.oninput = function() {
-    gravityLabel.innerHTML = "Gravity [px/s&sup2;]: "+this.value;
+    gravityLabel.innerHTML = "<span style = 'font-size: 20px'>Gravity [px/s&sup2;]: "+this.value+"</span>";
     gravity = this.value;
     for(obj of objects) {
         if(paused) {
