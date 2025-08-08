@@ -10,6 +10,7 @@ canvas.width = window.innerWidth * 0.95;
 let gravity = 3000; // pixels per second per second, maximum value is in the slidercontainer in index.html
 let gravitySlider = document.getElementById("gravitySlider");
 let gravityLabel = document.getElementById("gravityLabel");
+let fireButton = document.getElementById("btnCannon");
 gravitySlider.oninput = function() {
     gravityLabel.innerHTML = "<span style = 'font-size: 20px'>Gravity [px/s&sup2;]: "+this.value+"</span>";
     gravity = this.value;
@@ -103,6 +104,9 @@ function togglePaused() {
     paused = !paused;
     document.getElementById('pauseButtonName').innerHTML = paused ? "play_arrow" : "pause";
     document.getElementById('pauseButtonText').innerHTML = paused ? "<u>P</u>lay" : "<u>P</u>ause";
+    fireButton.disabled = paused;
+    fireButton.style.pointerEvents = paused ? "none" : "auto";
+    fireButton.style.opacity = paused ? 0.5 : 1;
     if(paused) {
         for(obj of objects) {
             obj.pause();
