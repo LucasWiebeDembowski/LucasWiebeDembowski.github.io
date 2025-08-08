@@ -1,7 +1,13 @@
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
 
-let gravity = 3000; // pixels per second per second, maximum value is in the slidecontainer in index.html
+let paused = false;
+let objects = []
+
+canvas.height = window.innerHeight * 0.8;
+canvas.width = window.innerWidth * 0.95;
+
+let gravity = 3000; // pixels per second per second, maximum value is in the slidercontainer in index.html
 let gravitySlider = document.getElementById("gravitySlider");
 let gravityLabel = document.getElementById("gravityLabel");
 gravitySlider.oninput = function() {
@@ -92,8 +98,6 @@ class Circle {
     }
 }
 
-let paused = false;
-let objects = []
 
 function togglePaused() {
     paused = !paused;
@@ -119,10 +123,10 @@ document.addEventListener('keyup', (event) => {
     }
 });
 
-const rectHeight = 150;
-const rectWidth = 50;
-const rectX = -0.5*rectWidth;
-const rectY = canvas.height - rectHeight;
+var rectHeight = 0.15*canvas.height;
+var rectWidth = 0.10*canvas.height;
+var rectX = -0.5*rectWidth;
+var rectY = canvas.height - rectHeight;
 const rectRotation = Math.PI/6.0; // clockwise
 function fireCannon() {
     if(!paused) {
@@ -132,7 +136,7 @@ function fireCannon() {
             rectY + rectHeight - rectHeight*Math.cos(rectRotation),
             10*rectHeight*Math.sin(rectRotation),
             -10*rectHeight*Math.cos(rectRotation),
-            50))
+            0.05*canvas.height))
     }
 }
 
