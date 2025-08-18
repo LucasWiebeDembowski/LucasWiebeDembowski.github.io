@@ -7,18 +7,20 @@ let objects = []
 canvas.height = window.innerHeight * 0.8;
 canvas.width = window.innerWidth * 0.95;
 
-let gravity = 3000; // pixels per second per second, maximum value is in the slidercontainer in index.html
+let gravityPxPerSecSq;
 let gravitySlider = document.getElementById("gravitySlider");
 let gravityLabel = document.getElementById("gravityLabel");
 let fireButton = document.getElementById("btnCannon");
 gravitySlider.oninput = function() {
-    gravityLabel.innerHTML = "<span style = 'font-size: 20px'>Gravity [px/s&sup2;]: "+this.value+"</span>";
-    gravity = this.value;
+    gravityLabel.innerHTML = "<span style = 'font-size: 20px'>Gravity: "+this.value+"%</span>";
+    const magicNumber = 10;
+    // slider value is a percentage of the max value.
+    gravityPxPerSecSq = magicNumber * canvas.height * this.value * 0.01;
     for(obj of objects) {
         if(paused) {
-            obj.ayCached = gravity;
+            obj.ayCached = gravityPxPerSecSq;
         }else {
-            obj.ay = gravity;
+            obj.ay = gravityPxPerSecSq;
         }
     }
 }
@@ -33,8 +35,8 @@ class Circle {
         this.mass = Math.PI*radius**2
         this.vxCached = vx;
         this.vyCached = vy;
-        this.ay = gravity;
-        this.ayCached = gravity;
+        this.ay = gravityPxPerSecSq;
+        this.ayCached = gravityPxPerSecSq;
     }
     pause() {
         this.vxCached = this.vx;
@@ -61,7 +63,7 @@ class Circle {
             this.vx = -this.vx;
         }
 
-        if(gravity == 0) {
+        if(gravityPxPerSecSq == 0) {
             this.y += elapsedSec * this.vy;
             if(this.y + this.radius > canvas.height) {
                 // Bounce off the ground.
@@ -216,7 +218,7 @@ function update(timestampMs) {
     render();
 }
 
-gravitySlider.value=gravity;
+gravitySlider.value=50; // percent
 gravitySlider.oninput();
 
 start();
