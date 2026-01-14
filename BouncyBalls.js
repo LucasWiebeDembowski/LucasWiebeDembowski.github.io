@@ -12,11 +12,10 @@ let objects = [];
 let colours = ["#005500", "#AA0000", "#0000AA"];
 let leftScore=0;
 let rightScore=0;
+let spawnRequestTimestamp = Date.now();
 
 canvas.height = window.innerHeight * 0.8;
 canvas.width = window.innerWidth * 0.95;
-
-let fireButton = document.getElementById("btnBall");
 
 class Circle {
     constructor(x,y,vx,vy,radius) {
@@ -167,9 +166,6 @@ function togglePaused() {
     paused = !paused;
     document.getElementById('pauseButtonName').innerHTML = paused ? "play_arrow" : "pause";
     document.getElementById('pauseButtonText').innerHTML = paused ? "<u>P</u>lay" : "<u>P</u>ause";
-    fireButton.disabled = paused;
-    fireButton.style.pointerEvents = paused ? "none" : "auto";
-    fireButton.style.opacity = paused ? 0.5 : 1;
     if(paused) {
         for(const obj of objects) {
             obj.pause();
@@ -250,6 +246,7 @@ function spawnBall() {
             radius);
         balls.push(newBall);
         objects.push(newBall);
+		spawnRequestTimestamp = -1;
     }
 }
 
@@ -272,12 +269,25 @@ function start() {
     thenMs = Date.now();
 }
 
+function deleteBall(ballIdx) {
+	const index = objects.indexOf(balls[ballIdx]);
+	if(index > -1) {
+		objects.splice(index, 1);
+	}
+	balls.splice(ballIdx, 1);
+	spawnRequestTimestamp = Date.now();
+}
+
 function update(timestampMs) {
     requestAnimationFrame(update);
     const nowMs = Date.now();
     const frameTimeSecCap = 0.05; // arbitrary value, avoids huge frametime when user clicks off the window
     const elapsedSec = ((nowMs - thenMs)/msPerSec) % frameTimeSecCap;
     thenMs = nowMs;
+	
+	if(spawnRequestTimestamp > 0 && nowMs - spawnRequestTimestamp >= 1000) {
+		spawnBall();
+	}
 
     for(let i = 0; i < balls.length; i++) {
         // collisions between balls
@@ -316,18 +326,10 @@ function update(timestampMs) {
         }
         if(balls[i].x < 0) {
             rightScore++;
-            const index = objects.indexOf(balls[i]);
-            if(index > -1) {
-                objects.splice(index, 1);
-            }
-            balls.splice(i, 1);
+            deleteBall(i);
         }else if(balls[i].x > canvas.width) {
             leftScore++;
-            const index = objects.indexOf(balls[i]);
-            if(index > -1) {
-                objects.splice(index, 1);
-            }
-            balls.splice(i, 1);
+            deleteBall(i);
         }
     }
 
