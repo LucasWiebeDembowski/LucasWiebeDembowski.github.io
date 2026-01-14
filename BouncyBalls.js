@@ -7,9 +7,11 @@ let paused = false;
 let balls = [];
 let paddles = [];
 let leftPaddle;
+let rightPaddle;
 let objects = [];
 let colours = ["#005500", "#AA0000", "#0000AA"];
 let leftScore=0;
+let rightScore=0;
 
 canvas.height = window.innerHeight * 0.8;
 canvas.width = window.innerWidth * 0.95;
@@ -65,31 +67,38 @@ class Circle {
         let collided = false;
         let heightCorrection = 0;
         let tAfter = elapsedSec;
-        for(const paddle of paddles) {
-            if(this.vx < 0
-                && this.x - this.radius + elapsedSec * this.vx < paddle.x + paddle.w
-                && this.y <= paddle.y + paddle.h + 0.75*this.radius
-                && this.y >= paddle.y - 0.75*this.radius
-            ) {
-                const distanceFromPaddle = (this.x - this.radius) - (paddle.x + paddle.w);
-                const tBefore = Math.abs(distanceFromPaddle / this.vx);
-                tAfter = elapsedSec - tBefore;
-                heightCorrection = tBefore * this.vy;
-                this.vx = -this.vx;
-                this.x = paddle.x + paddle.w + this.radius + tAfter * this.vx;
-                const ballDistAlongPaddle = (this.y - (paddle.y + 0.5*paddle.h))/paddle.h;
-                this.vy = ballSpeedRoot2 * 2 * ballDistAlongPaddle;
-                leftScore++;
-                collided = true;
-            }
+        const cornerBounceRadius = 0.75*this.radius;
+        if(this.vx < 0
+            && this.x - this.radius + elapsedSec * this.vx < leftPaddle.x + leftPaddle.w
+            && this.y <= leftPaddle.y + leftPaddle.h + cornerBounceRadius
+            && this.y >= leftPaddle.y - cornerBounceRadius
+        ) {
+            const distanceFromleftPaddle = (this.x - this.radius) - (leftPaddle.x + leftPaddle.w);
+            const tBefore = Math.abs(distanceFromleftPaddle / this.vx);
+            tAfter = elapsedSec - tBefore;
+            heightCorrection = tBefore * this.vy;
+            this.vx = -this.vx;
+            this.x = leftPaddle.x + leftPaddle.w + this.radius + tAfter * this.vx;
+            const ballDistAlongPaddle = (this.y - (leftPaddle.y + 0.5*leftPaddle.h))/leftPaddle.h;
+            this.vy = ballSpeedRoot2 * 2 * ballDistAlongPaddle;
+            collided = true;
+        } else if(this.vx > 0
+            && this.x + this.radius + elapsedSec * this.vx > rightPaddle.x
+            && this.y <= rightPaddle.y + rightPaddle.h + cornerBounceRadius
+            && this.y >= rightPaddle.y - cornerBounceRadius
+        ) {
+            const distanceFromrightPaddle = rightPaddle.x - (this.x + this.radius);
+            const tBefore = Math.abs(distanceFromrightPaddle / this.vx);
+            tAfter = elapsedSec - tBefore;
+            heightCorrection = tBefore * this.vy;
+            this.vx = -this.vx;
+            this.x = rightPaddle.x - this.radius + tAfter * this.vx;
+            const ballDistAlongPaddle = (this.y - (rightPaddle.y + 0.5*rightPaddle.h))/rightPaddle.h;
+            this.vy = ballSpeedRoot2 * 2 * ballDistAlongPaddle;
+            collided = true;
         }
         if(!collided) {
             this.x += elapsedSec * this.vx;
-        }
-        // prevent going off edge
-        if (this.vx > 0 && this.x + this.radius > canvas.width) {
-            this.x = canvas.width - this.radius;
-            this.vx = -this.vx;
         }
 
         if(gravityPxPerSecSq == 0) {
@@ -197,6 +206,8 @@ let rectX = 0;
 let rectY = 0.5*canvas.height - 0.5*rectHeight;
 leftPaddle = new Rectangle( rectX, rectY, rectVx, rectVy, rectWidth, rectHeight );
 paddles.push(leftPaddle);
+rightPaddle = new Rectangle( canvas.width - rectWidth, rectY, rectVx, rectVy, rectWidth, rectHeight );
+paddles.push(rightPaddle);
 objects = balls.concat(paddles);
 
 document.addEventListener('keyup', (event) => {
@@ -205,16 +216,14 @@ document.addEventListener('keyup', (event) => {
             togglePaused();
             break;
         case 'w':
-            for(let paddle of paddles) {
-                paddle.vy = 0;
-                paddle.vyCached = 0;
-            }
-            break;
         case 's':
-            for(let paddle of paddles) {
-                paddle.vy = 0;
-                paddle.vyCached = 0;
-            }
+            leftPaddle.vy = 0;
+            leftPaddle.vyCached = 0;
+            break;
+        case 'i':
+        case 'k':
+            rightPaddle.vy = 0;
+            rightPaddle.vyCached = 0;
             break;
     }
 });
@@ -222,14 +231,20 @@ document.addEventListener('keyup', (event) => {
 document.addEventListener('keydown', (event) => {
     switch(event.key) {
         case 'w':
-            for(let paddle of paddles) {
-                if(!paused) paddle.vy = -5*rectHeight;
-            }
+            if(!paused) leftPaddle.vy = -5*rectHeight;
+            else leftPaddle.vyCached = -5*rectHeight;
             break;
         case 's':
-            for(let paddle of paddles) {
-                if(!paused) paddle.vy = 5*rectHeight;
-            }
+            if(!paused) leftPaddle.vy = 5*rectHeight;
+            else leftPaddle.vyCached = 5*rectHeight;
+            break;
+        case 'i':
+            if(!paused) rightPaddle.vy = -5*rectHeight;
+            else rightPaddle.vyCached = -5*rectHeight;
+            break;
+        case 'k':
+            if(!paused) rightPaddle.vy = 5*rectHeight;
+            else rightPaddle.vyCached = 5*rectHeight;
             break;
     }
 });
@@ -257,7 +272,7 @@ function render() {
     }
     ctx.font = "50px Arial";
     ctx.fillStyle = "#000000"
-    ctx.fillText(leftScore.toString(),0.5*canvas.width,50);
+    ctx.fillText(leftScore.toString()+","+rightScore.toString(),0.5*canvas.width,50);
 }
 
 const msPerSec = 1000;
@@ -310,8 +325,15 @@ function update(timestampMs) {
                 balls[i].y += distance * balls[i].vy / v;
             }
         }
-        // balls that went past the left edge
-        if(balls[i].x + balls[i].radius < 0) {
+        if(balls[i].x < 0) {
+            rightScore++;
+            const index = objects.indexOf(balls[i]);
+            if(index > -1) {
+                objects.splice(index, 1);
+            }
+            balls.splice(i, 1);
+        }else if(balls[i].x > canvas.width) {
+            leftScore++;
             const index = objects.indexOf(balls[i]);
             if(index > -1) {
                 objects.splice(index, 1);
