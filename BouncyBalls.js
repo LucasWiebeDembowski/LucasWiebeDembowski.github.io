@@ -16,24 +16,7 @@ let rightScore=0;
 canvas.height = window.innerHeight * 0.8;
 canvas.width = window.innerWidth * 0.95;
 
-const GRAVITY_DEFAULT_PERCENT = 0
-let gravityPxPerSecSq;
-let gravitySlider = document.getElementById("gravitySlider");
-let gravityLabel = document.getElementById("gravityLabel");
 let fireButton = document.getElementById("btnBall");
-gravitySlider.oninput = function() {
-    gravityLabel.innerHTML = "<span style = 'font-size: 20px'>Gravity: "+this.value+"%</span>";
-    const magicNumber = 10;
-    // slider value is a percentage of the max value.
-    gravityPxPerSecSq = magicNumber * canvas.height * this.value * 0.01;
-    for(let obj of balls) {
-        if(paused) {
-            obj.ayCached = gravityPxPerSecSq;
-        }else {
-            obj.ay = gravityPxPerSecSq;
-        }
-    }
-}
 
 class Circle {
     constructor(x,y,vx,vy,radius) {
@@ -45,8 +28,8 @@ class Circle {
         this.mass = Math.PI*radius**2
         this.vxCached = vx;
         this.vyCached = vy;
-        this.ay = gravityPxPerSecSq;
-        this.ayCached = gravityPxPerSecSq;
+        this.ay = 0;
+        this.ayCached = 0;
         this.colourStyle = colours[Math.floor(Math.random() * 3)];
     }
     pause() {
@@ -101,7 +84,7 @@ class Circle {
             this.x += elapsedSec * this.vx;
         }
 
-        if(gravityPxPerSecSq == 0) {
+        if(this.ay == 0) {
             this.y += (heightCorrection + tAfter * this.vy);
             if(this.y + this.radius > canvas.height) {
                 // Bounce off the ground.
@@ -353,8 +336,5 @@ function update(timestampMs) {
     }
     render();
 }
-
-gravitySlider.value=GRAVITY_DEFAULT_PERCENT;
-gravitySlider.oninput();
 
 start();
