@@ -22,6 +22,12 @@
         <canvas id="myCanvas" style="border: 1px solid #d3d3d3;">
             Your browser does not support HTML canvas tag :(
         </canvas>
-        <script src="BouncyBalls.js"></script>
+        <script>
+            // hack to force reload
+            const version = new Date().getTime();  
+            const script = document.createElement("script");  
+            script.src = "BouncyBalls.js?=" + version;  
+            document.body.appendChild(script); 
+        </script>
     </body>
 </html>

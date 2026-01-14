@@ -6,6 +6,7 @@ const ctx = canvas.getContext("2d");
 let paused = false;
 let balls = [];
 let paddles = [];
+let leftPaddle;
 let objects = [];
 let colours = ["#005500", "#AA0000", "#0000AA"];
 let leftScore=0;
@@ -60,21 +61,30 @@ class Circle {
         this.ay = this.ayCached;
     }
     update(elapsedSec) {
-        this.x += elapsedSec * this.vx;
         // ball-paddle collisions
+        let collided = false;
+        let heightCorrection = 0;
+        let tAfter = elapsedSec;
         for(const paddle of paddles) {
-            if(this.vx < 0) {
-                if(this.x - this.radius <= paddle.x + paddle.w
-                    && this.y <= paddle.y + paddle.h + 0.75*this.radius
-                    && this.y >= paddle.y - 0.75*this.radius
-                ) {
-                    this.x = this.radius + paddle.w;
-                    this.vx = -this.vx;
-                    const ballDistAlongPaddle = (this.y - (paddle.y + 0.5*paddle.h))/paddle.h;
-                    this.vy = ballSpeedRoot2 * 2 * ballDistAlongPaddle
-                    leftScore++
-                }
+            if(this.vx < 0
+                && this.x - this.radius + elapsedSec * this.vx < paddle.x + paddle.w
+                && this.y <= paddle.y + paddle.h + 0.75*this.radius
+                && this.y >= paddle.y - 0.75*this.radius
+            ) {
+                const distanceFromPaddle = (this.x - this.radius) - (paddle.x + paddle.w);
+                const tBefore = Math.abs(distanceFromPaddle / this.vx);
+                tAfter = elapsedSec - tBefore;
+                heightCorrection = tBefore * this.vy;
+                this.vx = -this.vx;
+                this.x = paddle.x + paddle.w + this.radius + tAfter * this.vx;
+                const ballDistAlongPaddle = (this.y - (paddle.y + 0.5*paddle.h))/paddle.h;
+                this.vy = ballSpeedRoot2 * 2 * ballDistAlongPaddle;
+                leftScore++;
+                collided = true;
             }
+        }
+        if(!collided) {
+            this.x += elapsedSec * this.vx;
         }
         // prevent going off edge
         if (this.vx > 0 && this.x + this.radius > canvas.width) {
@@ -83,7 +93,7 @@ class Circle {
         }
 
         if(gravityPxPerSecSq == 0) {
-            this.y += elapsedSec * this.vy;
+            this.y += (heightCorrection + tAfter * this.vy);
             if(this.y + this.radius > canvas.height) {
                 // Bounce off the ground.
                 this.y = canvas.height - this.radius;
@@ -128,7 +138,6 @@ class Rectangle {
         this.vx = vx;
         this.vy = vy;
         this.w = w;
-        this.radius = w; // FIXME
         this.h = h;
         this.vxCached = vx;
         this.vyCached = vy;
@@ -186,8 +195,8 @@ let rectVx = 0;
 let rectVy = 0;
 let rectX = 0;
 let rectY = 0.5*canvas.height - 0.5*rectHeight;
-let paddle = new Rectangle( rectX, rectY, rectVx, rectVy, rectWidth, rectHeight );
-paddles.push(paddle);
+leftPaddle = new Rectangle( rectX, rectY, rectVx, rectVy, rectWidth, rectHeight );
+paddles.push(leftPaddle);
 objects = balls.concat(paddles);
 
 document.addEventListener('keyup', (event) => {
@@ -196,12 +205,16 @@ document.addEventListener('keyup', (event) => {
             togglePaused();
             break;
         case 'w':
-            paddle.vy = 0;
-            paddle.vyCached = 0;
+            for(let paddle of paddles) {
+                paddle.vy = 0;
+                paddle.vyCached = 0;
+            }
             break;
         case 's':
-            paddle.vy = 0;
-            paddle.vyCached = 0;
+            for(let paddle of paddles) {
+                paddle.vy = 0;
+                paddle.vyCached = 0;
+            }
             break;
     }
 });
@@ -209,10 +222,14 @@ document.addEventListener('keyup', (event) => {
 document.addEventListener('keydown', (event) => {
     switch(event.key) {
         case 'w':
-            if(!paused) paddle.vy = -5*rectHeight;
+            for(let paddle of paddles) {
+                if(!paused) paddle.vy = -5*rectHeight;
+            }
             break;
         case 's':
-            if(!paused) paddle.vy = 5*rectHeight;
+            for(let paddle of paddles) {
+                if(!paused) paddle.vy = 5*rectHeight;
+            }
             break;
     }
 });
