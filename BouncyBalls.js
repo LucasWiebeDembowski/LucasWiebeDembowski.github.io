@@ -139,7 +139,7 @@ class Circle {
     }
 }
 
-const rectRotation = 0; // clockwise
+const rectRotationRadCW = 0;
 class Rectangle {
     constructor(x,y,vx,vy,w,h) {
         this.x = x;
@@ -163,16 +163,16 @@ class Rectangle {
     }
     update(elapsedSec) {
         this.y += elapsedSec * this.vy;
-        if(this.y < 0) {
-            this.y = 0;
-        }else if(this.y+this.h > canvas.height) {
-            this.y = canvas.height-this.h
+        if(this.y < this.w) {
+            this.y = this.w;
+        }else if(this.y + this.h > canvas.height - this.w) {
+            this.y = canvas.height - this.h - this.w
         }
     }
     render() {
         ctx.save(); // (https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Basic_animations)
         ctx.translate(0, this.y);
-        ctx.rotate(rectRotation);
+        ctx.rotate(rectRotationRadCW);
         ctx.translate(-0, -this.y);
         ctx.fillStyle = "#90A0B0";
         ctx.fillRect(this.x, this.y, this.w, this.h);
@@ -198,15 +198,16 @@ function togglePaused() {
     }
 }
 
-let rectHeight = 0.15*canvas.height;
-let rectWidth = 0.025*canvas.width;
+const rectHeight = 0.15*canvas.height;
+const paddleSpeed = 5*rectHeight;
+const rectWidth = 0.025*canvas.width;
 let rectVx = 0;
 let rectVy = 0;
-let rectX = 0;
+let rectX = 0.025*canvas.width;
 let rectY = 0.5*canvas.height - 0.5*rectHeight;
 leftPaddle = new Rectangle( rectX, rectY, rectVx, rectVy, rectWidth, rectHeight );
 paddles.push(leftPaddle);
-rightPaddle = new Rectangle( canvas.width - rectWidth, rectY, rectVx, rectVy, rectWidth, rectHeight );
+rightPaddle = new Rectangle( canvas.width - rectWidth - rectX, rectY, rectVx, rectVy, rectWidth, rectHeight );
 paddles.push(rightPaddle);
 objects = balls.concat(paddles);
 
@@ -222,6 +223,8 @@ document.addEventListener('keyup', (event) => {
             break;
         case 'i':
         case 'k':
+        case 'ArrowUp':
+        case 'ArrowDown':
             rightPaddle.vy = 0;
             rightPaddle.vyCached = 0;
             break;
@@ -231,20 +234,22 @@ document.addEventListener('keyup', (event) => {
 document.addEventListener('keydown', (event) => {
     switch(event.key) {
         case 'w':
-            if(!paused) leftPaddle.vy = -5*rectHeight;
-            else leftPaddle.vyCached = -5*rectHeight;
+            if(!paused) leftPaddle.vy = -paddleSpeed;
+            else leftPaddle.vyCached = -paddleSpeed;
             break;
         case 's':
-            if(!paused) leftPaddle.vy = 5*rectHeight;
-            else leftPaddle.vyCached = 5*rectHeight;
+            if(!paused) leftPaddle.vy = paddleSpeed;
+            else leftPaddle.vyCached = paddleSpeed;
             break;
         case 'i':
-            if(!paused) rightPaddle.vy = -5*rectHeight;
-            else rightPaddle.vyCached = -5*rectHeight;
+        case 'ArrowUp':
+            if(!paused) rightPaddle.vy = -paddleSpeed;
+            else rightPaddle.vyCached = -paddleSpeed;
             break;
         case 'k':
-            if(!paused) rightPaddle.vy = 5*rectHeight;
-            else rightPaddle.vyCached = 5*rectHeight;
+        case 'ArrowDown':
+            if(!paused) rightPaddle.vy = paddleSpeed;
+            else rightPaddle.vyCached = paddleSpeed;
             break;
     }
 });
@@ -272,7 +277,8 @@ function render() {
     }
     ctx.font = "50px Arial";
     ctx.fillStyle = "#000000"
-    ctx.fillText(leftScore.toString()+","+rightScore.toString(),0.5*canvas.width,50);
+    ctx.fillText(leftScore.toString(),0.25*canvas.width,50);
+    ctx.fillText(rightScore.toString(),0.75*canvas.width,50);
 }
 
 const msPerSec = 1000;
@@ -285,9 +291,9 @@ function start() {
 
 function update(timestampMs) {
     requestAnimationFrame(update);
-    let nowMs = Date.now();
+    const nowMs = Date.now();
     const frameTimeSecCap = 0.05; // arbitrary value, avoids huge frametime when user clicks off the window
-    let elapsedSec = ((nowMs - thenMs)/msPerSec) % frameTimeSecCap;
+    const elapsedSec = ((nowMs - thenMs)/msPerSec) % frameTimeSecCap;
     thenMs = nowMs;
 
     for(let i = 0; i < balls.length; i++) {
