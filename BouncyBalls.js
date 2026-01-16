@@ -17,6 +17,7 @@ let spawnRequestTimestamp = Date.now();
 canvas.height = window.innerHeight * 0.8;
 canvas.width = window.innerWidth * 0.95;
 
+const ballSpeed = 0.4*canvas.height;
 class Circle {
     constructor(x,y,vx,vy,radius) {
         this.x = x;
@@ -55,28 +56,36 @@ class Circle {
             && this.y <= leftPaddle.y + leftPaddle.h + cornerBounceRadius
             && this.y >= leftPaddle.y - cornerBounceRadius
         ) {
-            const distanceFromleftPaddle = (this.x - this.radius) - (leftPaddle.x + leftPaddle.w);
-            const tBefore = Math.abs(distanceFromleftPaddle / this.vx);
+            // Determine collision parameters
+            const distanceFromLeftPaddle = (this.x - this.radius) - (leftPaddle.x + leftPaddle.w);
+            const tBefore = Math.abs(distanceFromLeftPaddle / this.vx);
             tAfter = elapsedSec - tBefore;
             heightCorrection = tBefore * this.vy;
-            this.vx = -this.vx;
-            this.x = leftPaddle.x + leftPaddle.w + this.radius + tAfter * this.vx;
-            const ballDistAlongPaddle = (this.y - (leftPaddle.y + 0.5*leftPaddle.h))/leftPaddle.h;
-            this.vy = ballSpeedRoot2 * 2 * ballDistAlongPaddle;
+            const fractionAlongPaddle = (this.y - (leftPaddle.y + 0.5*leftPaddle.h))/leftPaddle.h; // TODO FIX -0.5 to 0.5
+            const bounceAngle = fractionAlongPaddle * 0.5 * Math.PI;
+            // Perform the update.
+            // Speed is slow before it hits the first paddle.
+            this.vx = ballSpeed * 2 * Math.cos(bounceAngle);
+            this.vy = ballSpeed * 2 * Math.sin(bounceAngle);
+            this.x = leftPaddle.x + leftPaddle.w + this.radius + tAfter * this.vx; // this.vx must be updated first.
             collided = true;
         } else if(this.vx > 0
             && this.x + this.radius + elapsedSec * this.vx > rightPaddle.x
             && this.y <= rightPaddle.y + rightPaddle.h + cornerBounceRadius
             && this.y >= rightPaddle.y - cornerBounceRadius
         ) {
-            const distanceFromrightPaddle = rightPaddle.x - (this.x + this.radius);
-            const tBefore = Math.abs(distanceFromrightPaddle / this.vx);
+            // Determine collision parameters
+            const distanceFromRightPaddle = rightPaddle.x - (this.x + this.radius);
+            const tBefore = Math.abs(distanceFromRightPaddle / this.vx);
             tAfter = elapsedSec - tBefore;
             heightCorrection = tBefore * this.vy;
-            this.vx = -this.vx;
-            this.x = rightPaddle.x - this.radius + tAfter * this.vx;
-            const ballDistAlongPaddle = (this.y - (rightPaddle.y + 0.5*rightPaddle.h))/rightPaddle.h;
-            this.vy = ballSpeedRoot2 * 2 * ballDistAlongPaddle;
+            const fractionAlongPaddle = (this.y - (rightPaddle.y + 0.5*rightPaddle.h))/rightPaddle.h;
+            const bounceAngle = fractionAlongPaddle * 0.5 * Math.PI;
+            // Perform the update.
+            // Speed is slow before it hits the first paddle.
+            this.vx = -ballSpeed * 2 * Math.cos(bounceAngle);
+            this.vy = ballSpeed * 2 * Math.sin(bounceAngle);
+            this.x = rightPaddle.x - this.radius + tAfter * this.vx; // this.vx must be updated first.
             collided = true;
         }
         if(!collided) {
@@ -233,16 +242,16 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-const ballSpeedRoot2 = 5*rectHeight;
 function spawnBall() {
     if(!paused) {
         // x-position of rectangle is at the leftmost edge, but x-position of circle is at the center.
         const radius = 0.03*canvas.height;
+        const angle = Math.random()*0.5*Math.PI - 0.25*Math.PI;
         const newBall = new Circle(
             0.5*canvas.width,
-            0.5*canvas.height,
-            ballSpeedRoot2,
-            ballSpeedRoot2,
+            Math.random()*(canvas.height - 2*radius) + radius,
+            ballSpeed*Math.cos(angle) * (Math.random() > 0.5 ? 1 : -1),
+            ballSpeed*Math.sin(angle),
             radius);
         balls.push(newBall);
         objects.push(newBall);
