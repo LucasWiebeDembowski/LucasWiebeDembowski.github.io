@@ -3,7 +3,7 @@
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
 
-let paused = false;
+let paused = true;
 let balls = [];
 let paddles = [];
 let leftPaddle;
