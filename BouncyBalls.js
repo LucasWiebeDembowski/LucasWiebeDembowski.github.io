@@ -18,6 +18,7 @@ canvas.height = window.innerHeight * 0.8;
 canvas.width = window.innerWidth * 0.95;
 
 const ballSpeed = 0.4*canvas.height;
+
 class Circle {
     constructor(x,y,vx,vy,radius) {
         this.x = x;
@@ -172,7 +173,6 @@ class Circle {
     }
 }
 
-const rectRotationRadCW = 0;
 class Rectangle {
     constructor(x,y,vx,vy,w,h) {
         this.x = x;
@@ -183,6 +183,7 @@ class Rectangle {
         this.h = h;
         this.vxCached = vx;
         this.vyCached = vy;
+        this.rotationRadCW = 0;
     }
     pause() {
         this.vxCached = this.vx;
@@ -205,7 +206,7 @@ class Rectangle {
     render() {
         ctx.save(); // (https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Basic_animations)
         ctx.translate(0, this.y);
-        ctx.rotate(rectRotationRadCW);
+        ctx.rotate(this.rotationRadCW);
         ctx.translate(-0, -this.y);
         ctx.fillStyle = "#90A0B0";
         ctx.fillRect(this.x, this.y, this.w, this.h);
@@ -329,7 +330,6 @@ function deleteBall(ballIdx) {
 	}
 	balls.splice(ballIdx, 1);
 	spawnRequestTimestamp = Date.now();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 function update() {
