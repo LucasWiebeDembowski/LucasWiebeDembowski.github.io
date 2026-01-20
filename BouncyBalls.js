@@ -61,7 +61,7 @@ class Circle {
             }else {
                 this.vy = -Math.abs(this.vy);
             }
-            this.y = leftPaddle.y - this.radius; // move it outside so this code isn't run two frames in a row.
+            this.y = leftPaddle.y - this.radius; // move ball outside so this code isn't run two frames in a row.
         } else if(this.vx < 0
             && this.x - this.radius < leftPaddle.x + leftPaddle.w
             && this.y <= leftPaddle.y + leftPaddle.h + this.radius
@@ -91,12 +91,28 @@ class Circle {
             this.vy = ballSpeed * 2 * Math.sin(bounceAngle);
             this.x = leftPaddle.x + leftPaddle.w + this.radius + tAfter * this.vx; // this.vx must be updated first.
             collided = true;
-        // } else if(this.vx > 0
-        //     && this.x + this.radius > rightPaddle.x
-        //     && this.y <= rightPaddle.y + rightPaddle.h + cornerBounceRadius
-        //     && this.y >= rightPaddle.y - cornerBounceRadius
-        // ) {
-        //     this.vy = -this.vy;
+        } else if(this.vx > 0
+            && this.x + this.radius > rightPaddle.x
+            && this.y <= rightPaddle.y + rightPaddle.h
+            && this.y >= rightPaddle.y - this.radius
+        ) {
+            if(rightPaddle.vy < 0) {
+                this.vy = rightPaddle.vy - Math.abs(this.vy);
+            }else {
+                this.vy = -Math.abs(this.vy);
+            }
+            this.y = rightPaddle.y - this.radius; // move ball outside so this code isn't run two frames in a row.
+        } else if(this.vx > 0
+            && this.x + this.radius > rightPaddle.x
+            && this.y <= rightPaddle.y + rightPaddle.h + this.radius
+            && this.y >= rightPaddle.y
+        ) { // bounce off the bottom
+            if(rightPaddle.vy > 0) {
+                this.vy = rightPaddle.vy + Math.abs(this.vy);
+            }else {
+                this.vy = Math.abs(this.vy);
+            }
+            this.y = rightPaddle.y + rightPaddle.h + this.radius;
         } else if(this.vx > 0
             && this.x + this.radius + elapsedSec * this.vx > rightPaddle.x
             && this.y <= rightPaddle.y + rightPaddle.h + cornerBounceRadius
