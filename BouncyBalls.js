@@ -52,6 +52,28 @@ class Circle {
         let tAfter = elapsedSec;
         const cornerBounceRadius = 0.75*this.radius;
         if(this.vx < 0
+            && this.x - this.radius < leftPaddle.x + leftPaddle.w // TODO and not to the left of it
+            && this.y <= leftPaddle.y + leftPaddle.h
+            && this.y >= leftPaddle.y - this.radius
+        ) { // bounce off the top
+            if(leftPaddle.vy < 0) {
+                this.vy = leftPaddle.vy - Math.abs(this.vy);
+            }else {
+                this.vy = -Math.abs(this.vy);
+            }
+            this.y = leftPaddle.y - this.radius; // move it outside so this code isn't run two frames in a row.
+        } else if(this.vx < 0
+            && this.x - this.radius < leftPaddle.x + leftPaddle.w
+            && this.y <= leftPaddle.y + leftPaddle.h + this.radius
+            && this.y >= leftPaddle.y
+        ) { // bounce off the bottom
+            if(leftPaddle.vy > 0) {
+                this.vy = leftPaddle.vy + Math.abs(this.vy);
+            }else {
+                this.vy = Math.abs(this.vy);
+            }
+            this.y = leftPaddle.y + leftPaddle.h + this.radius;
+        } else if(this.vx < 0
             && this.x - this.radius + elapsedSec * this.vx < leftPaddle.x + leftPaddle.w
             && this.y <= leftPaddle.y + leftPaddle.h + cornerBounceRadius
             && this.y >= leftPaddle.y - cornerBounceRadius
@@ -61,7 +83,7 @@ class Circle {
             const tBefore = Math.abs(distanceFromLeftPaddle / this.vx);
             tAfter = elapsedSec - tBefore;
             heightCorrection = tBefore * this.vy;
-            const fractionAlongPaddle = (this.y - (leftPaddle.y + 0.5*leftPaddle.h))/leftPaddle.h; // TODO FIX -0.5 to 0.5
+            const fractionAlongPaddle = (this.y - (leftPaddle.y + 0.5*leftPaddle.h))/leftPaddle.h; // -0.5 to 0.5
             const bounceAngle = fractionAlongPaddle * 0.5 * Math.PI;
             // Perform the update.
             // Speed is slow before it hits the first paddle.
@@ -69,6 +91,12 @@ class Circle {
             this.vy = ballSpeed * 2 * Math.sin(bounceAngle);
             this.x = leftPaddle.x + leftPaddle.w + this.radius + tAfter * this.vx; // this.vx must be updated first.
             collided = true;
+        // } else if(this.vx > 0
+        //     && this.x + this.radius > rightPaddle.x
+        //     && this.y <= rightPaddle.y + rightPaddle.h + cornerBounceRadius
+        //     && this.y >= rightPaddle.y - cornerBounceRadius
+        // ) {
+        //     this.vy = -this.vy;
         } else if(this.vx > 0
             && this.x + this.radius + elapsedSec * this.vx > rightPaddle.x
             && this.y <= rightPaddle.y + rightPaddle.h + cornerBounceRadius
@@ -261,6 +289,8 @@ function spawnBall() {
 
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // ctx.clearRect(0, 0, 2*leftPaddle.w, canvas.height);
+    // ctx.clearRect(canvas.width-2*leftPaddle.w, 0, canvas.width, canvas.height);
     for(const obj of objects) {
         obj.render();
     }
@@ -285,9 +315,10 @@ function deleteBall(ballIdx) {
 	}
 	balls.splice(ballIdx, 1);
 	spawnRequestTimestamp = Date.now();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-function update(timestampMs) {
+function update() {
     requestAnimationFrame(update);
     const nowMs = Date.now();
     const frameTimeSecCap = 0.05; // arbitrary value, avoids huge frametime when user clicks off the window
