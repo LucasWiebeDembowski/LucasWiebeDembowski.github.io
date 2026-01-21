@@ -214,8 +214,8 @@ class Rectangle {
                 }else {
                     newVy = 0;
                 }
-                const HUMAN_REACTION_TIME_MS = 250;
-                if(newVy != this.vy && Date.now() - this.lastVelocityChangeMs > HUMAN_REACTION_TIME_MS) {
+                const REACTION_TIME_MS = 150;
+                if(newVy != this.vy && Date.now() - this.lastVelocityChangeMs > REACTION_TIME_MS) {
                     this.vy = newVy;
                     this.lastVelocityChangeMs = Date.now();
                 }
