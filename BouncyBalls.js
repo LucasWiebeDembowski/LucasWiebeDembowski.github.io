@@ -3,6 +3,13 @@
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
 
+canvas.height = window.innerHeight * 0.8;
+canvas.width = window.innerWidth * 0.95;
+
+const ballSpeed = 0.5*canvas.height;
+const rectHeight = 0.15*canvas.height;
+const paddleSpeed = 2*ballSpeed;
+
 let paused = true;
 let balls = [];
 let paddles = [];
@@ -13,11 +20,10 @@ let colours = ["#005500", "#AA0000", "#0000AA"];
 let leftScore=0;
 let rightScore=0;
 let spawnRequestTimestamp = Date.now();
-
-canvas.height = window.innerHeight * 0.8;
-canvas.width = window.innerWidth * 0.95;
-
-const ballSpeed = 0.4*canvas.height;
+let cpuLeftPaddle = true;
+document.getElementById("instructions").innerHTML = cpuLeftPaddle
+    ? "Left Paddle: Computer player. Right Paddle: <b>i/k</b> (or up/down arrows) to go up/down."
+    : "Left Paddle: <b>w/s</b> to go up/down. Right Paddle: <b>i/k</b> (or up/down arrows) to go up/down.";
 
 class Circle {
     constructor(x,y,vx,vy,radius) {
@@ -174,7 +180,7 @@ class Circle {
 }
 
 class Rectangle {
-    constructor(x,y,vx,vy,w,h) {
+    constructor(x,y,vx,vy,w,h,cpuControlled) {
         this.x = x;
         this.y = y;
         this.vx = vx;
@@ -184,6 +190,8 @@ class Rectangle {
         this.vxCached = vx;
         this.vyCached = vy;
         this.rotationRadCW = 0;
+        this.cpuControlled = cpuControlled;
+        this.lastVelocityChangeMs = Date.now();
     }
     pause() {
         this.vxCached = this.vx;
@@ -195,7 +203,26 @@ class Rectangle {
         this.vx = this.vxCached;
         this.vy = this.vyCached;
     }
-    update(elapsedSec) {
+    update(elapsedSec) { // TODO put ball collision code here instead.
+        if(!paused && this.cpuControlled){
+            if(balls.length > 0) {
+                let newVy;
+                if(balls[0].y > this.y + this.h) {
+                    newVy = paddleSpeed;
+                }else if(balls[0].y < this.y){
+                    newVy = -paddleSpeed;
+                }else {
+                    newVy = 0;
+                }
+                const HUMAN_REACTION_TIME_MS = 250;
+                if(newVy != this.vy && Date.now() - this.lastVelocityChangeMs > HUMAN_REACTION_TIME_MS) {
+                    this.vy = newVy;
+                    this.lastVelocityChangeMs = Date.now();
+                }
+            }else {
+                this.vy = 0;
+            }
+        }
         this.y += elapsedSec * this.vy;
         if(this.y < this.w) {
             this.y = this.w;
@@ -229,16 +256,14 @@ function togglePaused() {
     }
 }
 
-const rectHeight = 0.15*canvas.height;
-const paddleSpeed = 5*rectHeight;
 const rectWidth = 0.025*canvas.width;
 let rectVx = 0;
 let rectVy = 0;
 let rectX = 0.025*canvas.width;
 let rectY = 0.5*canvas.height - 0.5*rectHeight;
-leftPaddle = new Rectangle( 3*rectX, rectY, rectVx, rectVy, rectWidth, rectHeight );
+leftPaddle = new Rectangle( 3*rectX, rectY, rectVx, rectVy, rectWidth, rectHeight, cpuLeftPaddle );
 paddles.push(leftPaddle);
-rightPaddle = new Rectangle( canvas.width - rectWidth - 3*rectX, rectY, rectVx, rectVy, rectWidth, rectHeight );
+rightPaddle = new Rectangle( canvas.width - rectWidth - 3*rectX, rectY, rectVx, rectVy, rectWidth, rectHeight, false );
 paddles.push(rightPaddle);
 objects = balls.concat(paddles);
 
@@ -249,6 +274,7 @@ document.addEventListener('keyup', (event) => {
             break;
         case 'w':
         case 's':
+            if(cpuLeftPaddle) break;
             leftPaddle.vy = 0;
             leftPaddle.vyCached = 0;
             break;
@@ -265,10 +291,12 @@ document.addEventListener('keyup', (event) => {
 document.addEventListener('keydown', (event) => {
     switch(event.key) {
         case 'w':
+            if(cpuLeftPaddle) break;
             if(!paused) leftPaddle.vy = -paddleSpeed;
             else leftPaddle.vyCached = -paddleSpeed;
             break;
         case 's':
+            if(cpuLeftPaddle) break;
             if(!paused) leftPaddle.vy = paddleSpeed;
             else leftPaddle.vyCached = paddleSpeed;
             break;
