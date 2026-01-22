@@ -16,11 +16,16 @@ let paddles = [];
 let leftPaddle;
 let rightPaddle;
 let objects = [];
-let colours = ["#005500", "#AA0000", "#0000AA"];
 let leftScore=0;
 let rightScore=0;
 let spawnRequestTimestamp = Date.now();
+
 let cpuLeftPaddle = true;
+let darkMode = true;
+let colours = darkMode
+    ? ["#009900", "#FF0000", "#0044FF"]
+    : ["#005500", "#AA0000", "#0000AA"];
+
 document.getElementById("instructions").innerHTML = cpuLeftPaddle
     ? "Left Paddle: Computer player. Right Paddle: <b>i/k</b> (or up/down arrows) to go up/down."
     : "Left Paddle: <b>w/s</b> to go up/down. Right Paddle: <b>i/k</b> (or up/down arrows) to go up/down.";
@@ -331,14 +336,13 @@ function spawnBall() {
 }
 
 function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // ctx.clearRect(0, 0, 2*leftPaddle.w, canvas.height);
-    // ctx.clearRect(canvas.width-2*leftPaddle.w, 0, canvas.width, canvas.height);
+    ctx.fillStyle = darkMode ? "#000000" : "#FFFFFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     for(const obj of objects) {
         obj.render();
     }
     ctx.font = "50px Arial";
-    ctx.fillStyle = "#000000"
+    ctx.fillStyle = darkMode ? "#ffffff" : "#000000";
     ctx.fillText(leftScore.toString(),0.25*canvas.width,50);
     ctx.fillText(rightScore.toString(),0.75*canvas.width,50);
 }

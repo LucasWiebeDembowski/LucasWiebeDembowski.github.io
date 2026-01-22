@@ -1,3 +1,6 @@
+body {
+  background-color: lightgrey;
+}
 .button {
     vertical-align: top;
     height: 50px;
