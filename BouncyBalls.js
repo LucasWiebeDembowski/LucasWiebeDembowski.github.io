@@ -10,6 +10,10 @@ const ballSpeed = 0.5*canvas.height;
 const rectHeight = 0.15*canvas.height;
 const paddleSpeed = 2*ballSpeed;
 
+const STATE_START = 0;
+const STATE_PLAY = 1;
+let state = STATE_START;
+
 let paused = true;
 let balls = [];
 let paddles = [];
@@ -19,6 +23,11 @@ let objects = [];
 let leftScore=0;
 let rightScore=0;
 let spawnRequestTimestamp = Date.now();
+let buttons = [];
+const mouse = {
+  x: 0,
+  y: 0
+};
 
 let cpuLeftPaddle = true;
 let darkMode = true;
@@ -26,9 +35,7 @@ let colours = darkMode
     ? ["#009900", "#FF0000", "#0044FF"]
     : ["#005500", "#AA0000", "#0000AA"];
 
-document.getElementById("instructions").innerHTML = cpuLeftPaddle
-    ? "Left Paddle: Computer player. Right Paddle: <b>i/k</b> (or up/down arrows) to go up/down."
-    : "Left Paddle: <b>w/s</b> to go up/down. Right Paddle: <b>i/k</b> (or up/down arrows) to go up/down.";
+document.getElementById("instructions").innerHTML = "Select one or two players to start the game.";
 
 class Circle {
     constructor(x,y,vx,vy,radius) {
@@ -248,8 +255,8 @@ class Rectangle {
 
 function togglePaused() {
     paused = !paused;
-    document.getElementById('pauseButtonName').innerHTML = paused ? "play_arrow" : "pause";
-    document.getElementById('pauseButtonText').innerHTML = paused ? "<u>P</u>lay" : "<u>P</u>ause";
+    // document.getElementById('pauseButtonName').innerHTML = paused ? "play_arrow" : "pause";
+    // document.getElementById('pauseButtonText').innerHTML = paused ? "<u>P</u>lay" : "<u>P</u>ause";
     if(paused) {
         for(const obj of objects) {
             obj.pause();
@@ -260,17 +267,6 @@ function togglePaused() {
         }
     }
 }
-
-const rectWidth = 0.025*canvas.width;
-let rectVx = 0;
-let rectVy = 0;
-let rectX = 0.025*canvas.width;
-let rectY = 0.5*canvas.height - 0.5*rectHeight;
-leftPaddle = new Rectangle( 3*rectX, rectY, rectVx, rectVy, rectWidth, rectHeight, cpuLeftPaddle );
-paddles.push(leftPaddle);
-rightPaddle = new Rectangle( canvas.width - rectWidth - 3*rectX, rectY, rectVx, rectVy, rectWidth, rectHeight, false );
-paddles.push(rightPaddle);
-objects = balls.concat(paddles);
 
 document.addEventListener('keyup', (event) => {
     switch(event.key) {
@@ -318,6 +314,96 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
+class Button {
+    constructor(x,y,w,h,text,callback){
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+        this.text = text;
+        this.callback = callback;
+        this.fillStyle = "#90A0B0";
+    }
+    handleMouseInput(x, y) {
+        if(x > this.x && x < this.x + this.w
+            && y > this.y && y < this.y + this.h)
+        {
+            this.callback();
+        }
+    }
+    handleMouseOver(x, y) {
+        if(x > this.x && x < this.x + this.w
+            && y > this.y && y < this.y + this.h)
+        {
+            this.fillStyle = "#90BBB0";
+        }else {
+            this.fillStyle = "#90A0B0";
+        }
+    }
+    render() {
+        ctx.fillStyle = this.fillStyle;
+        ctx.beginPath();
+        ctx.roundRect(this.x, this.y, this.w, this.h, 10);
+        ctx.fill();
+        ctx.font = (0.5*this.h).toString() + "px Arial";
+        ctx.fillStyle = "#FFFFFF";
+        // Text's x, y coordinate is the bottom left corner.
+        ctx.fillText(this.text, this.x + 0.15*this.h, this.y + 0.70*this.h);
+    }
+}
+const buttonWidth = 0.4*canvas.width;
+const buttonHeight = 0.1*canvas.height;
+let btnOnePlayer = new Button(
+    0.5*canvas.width - 0.5*buttonWidth, 0.5*canvas.height - 2*buttonHeight,
+    buttonWidth, buttonHeight, "One Player", function() {
+        startGame(true);
+    });
+let btnTwoPlayers = new Button(
+    0.5*canvas.width - 0.5*buttonWidth, 0.5*canvas.height - 0.75*buttonHeight,
+    buttonWidth, buttonHeight, "Two Players", function() {
+        startGame(false);
+    });
+buttons = [btnOnePlayer, btnTwoPlayers];
+
+canvas.addEventListener('mousedown', function(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    for(const button of buttons) {
+        button.handleMouseInput(x, y);
+    }
+});
+
+canvas.addEventListener("mousemove", function(event) {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = event.clientX - rect.left;
+    mouse.y = event.clientY - rect.top;
+});
+
+function startGame(isSinglePlayer) {
+    cpuLeftPaddle = isSinglePlayer;
+    const rectWidth = 0.025*canvas.width;
+    let rectVx = 0;
+    let rectVy = 0;
+    let rectX = 0.025*canvas.width;
+    let rectY = 0.5*canvas.height - 0.5*rectHeight;
+    leftPaddle = new Rectangle( 3*rectX, rectY,
+        rectVx, rectVy, rectWidth, rectHeight, cpuLeftPaddle );
+    paddles.push(leftPaddle);
+    rightPaddle = new Rectangle( canvas.width - rectWidth - 3*rectX, rectY,
+        rectVx, rectVy, rectWidth, rectHeight, false );
+    paddles.push(rightPaddle);
+    objects = balls.concat(paddles);
+    state = STATE_PLAY;
+    togglePaused();
+    spawnRequestTimestamp = Date.now();
+    document.getElementById("instructions").innerHTML = cpuLeftPaddle
+        ? "Press <b>p</b> to play/pause, <b>up/down</b> arrows for right paddle, left paddle computer-controlled."+
+            " Refresh the page to restart."
+        : "Press <b>p</b> to play/pause, <b>up/down</b> arrows for right paddle, <b>w/s</b> for left paddle."+
+            " Refresh the page to restart."
+}
+
 function spawnBall() {
     if(!paused) {
         // x-position of rectangle is at the leftmost edge, but x-position of circle is at the center.
@@ -338,13 +424,24 @@ function spawnBall() {
 function render() {
     ctx.fillStyle = darkMode ? "#000000" : "#FFFFFF";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    for(const obj of objects) {
-        obj.render();
+    if(state == STATE_START) {
+        for(const button of buttons) {
+            button.render();
+        }
+    }else {
+        for(const obj of objects) {
+            obj.render();
+        }
+        ctx.font = "50px Arial";
+        ctx.fillStyle = darkMode ? "#ffffff" : "#000000";
+        ctx.fillText(leftScore.toString(),0.25*canvas.width,50);
+        ctx.fillText(rightScore.toString(),0.75*canvas.width,50);
+        if(paused) {
+            ctx.font = "36px Arial";
+            ctx.fillStyle = darkMode ? "#ffffff" : "#000000";
+            ctx.fillText("Paused, press p to continue.", 0.1*canvas.height, 0.9*canvas.height);
+        }
     }
-    ctx.font = "50px Arial";
-    ctx.fillStyle = darkMode ? "#ffffff" : "#000000";
-    ctx.fillText(leftScore.toString(),0.25*canvas.width,50);
-    ctx.fillText(rightScore.toString(),0.75*canvas.width,50);
 }
 
 const msPerSec = 1000;
@@ -422,6 +519,11 @@ function update() {
     for(const obj of objects) {
         obj.update(elapsedSec);
     }
+
+    for(const button of buttons) {
+        button.handleMouseOver(mouse.x, mouse.y);
+    }
+
     render();
 }
 
