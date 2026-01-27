@@ -93,47 +93,31 @@ class Circle {
                     }
                     this.y = paddle.y + paddle.h + this.radius;
                 }
+            } else if(this.x + this.radius + elapsedSec * this.vx > paddle.x
+                && this.x - this.radius + elapsedSec * this.vx < paddle.x + paddle.w
+                && this.y <= paddle.y + paddle.h + cornerBounceRadius
+                && this.y >= paddle.y - cornerBounceRadius
+            ) { // bounce off the left or the right side
+                // Determine collision parameters
+                const distanceFrompaddle = (this.vx < 0) ?
+                    (this.x - this.radius) - (paddle.x + paddle.w) :
+                    paddle.x - (this.x + this.radius);
+                const tBefore = Math.abs(distanceFrompaddle / this.vx);
+                tAfter = elapsedSec - tBefore;
+                heightCorrection = tBefore * this.vy;
+                const fractionAlongPaddle = (this.y - (paddle.y + 0.5*paddle.h))/paddle.h; // -0.5 to 0.5
+                const bounceAngle = fractionAlongPaddle * 0.5 * Math.PI;
+                // Perform the update.
+                // Speed is slower during the serve.
+                this.vx = -Math.sign(this.vx) * ballSpeed * 2 * Math.cos(bounceAngle);
+                this.vy = ballSpeed * 2 * Math.sin(bounceAngle);
+                this.x = (this.vx > 0) ?
+                    paddle.x + paddle.w + this.radius + tAfter * this.vx :
+                    paddle.x - this.radius + tAfter * this.vx; // note this.vx was updated before this line.
+                collided = true;
             }
         }
-        if(this.vx < 0 && this.x + this.radius > leftPaddle.x
-            && this.x - this.radius + elapsedSec * this.vx < leftPaddle.x + leftPaddle.w
-            && this.y <= leftPaddle.y + leftPaddle.h + cornerBounceRadius
-            && this.y >= leftPaddle.y - cornerBounceRadius
-        ) {
-            // Determine collision parameters
-            const distanceFromLeftPaddle = (this.x - this.radius) - (leftPaddle.x + leftPaddle.w);
-            const tBefore = Math.abs(distanceFromLeftPaddle / this.vx);
-            tAfter = elapsedSec - tBefore;
-            heightCorrection = tBefore * this.vy;
-            const fractionAlongPaddle = (this.y - (leftPaddle.y + 0.5*leftPaddle.h))/leftPaddle.h; // -0.5 to 0.5
-            const bounceAngle = fractionAlongPaddle * 0.5 * Math.PI;
-            // Perform the update.
-            // Speed is slow before it hits the first paddle.
-            this.vx = ballSpeed * 2 * Math.cos(bounceAngle);
-            this.vy = ballSpeed * 2 * Math.sin(bounceAngle);
-            this.x = leftPaddle.x + leftPaddle.w + this.radius + tAfter * this.vx; // this.vx must be updated first.
-            collided = true;
-
-        } else if(this.vx > 0 && this.x - this.radius < rightPaddle.x + rightPaddle.w
-            && this.x + this.radius + elapsedSec * this.vx > rightPaddle.x
-            && this.y <= rightPaddle.y + rightPaddle.h + cornerBounceRadius
-            && this.y >= rightPaddle.y - cornerBounceRadius
-        ) {
-            // Determine collision parameters
-            const distanceFromRightPaddle = rightPaddle.x - (this.x + this.radius);
-            const tBefore = Math.abs(distanceFromRightPaddle / this.vx);
-            tAfter = elapsedSec - tBefore;
-            heightCorrection = tBefore * this.vy;
-            const fractionAlongPaddle = (this.y - (rightPaddle.y + 0.5*rightPaddle.h))/rightPaddle.h;
-            const bounceAngle = fractionAlongPaddle * 0.5 * Math.PI;
-            // Perform the update.
-            // Speed is slow before it hits the first paddle.
-            this.vx = -ballSpeed * 2 * Math.cos(bounceAngle);
-            this.vy = ballSpeed * 2 * Math.sin(bounceAngle);
-            this.x = rightPaddle.x - this.radius + tAfter * this.vx; // this.vx must be updated first.
-            collided = true;
-
-        }
+        
         if(!collided) {
             this.x += elapsedSec * this.vx;
         }
@@ -200,7 +184,7 @@ class Rectangle {
         this.vx = this.vxCached;
         this.vy = this.vyCached;
     }
-    update(elapsedSec) { // TODO put ball collision code here instead.
+    update(elapsedSec) {
         if(!paused && this.cpuControlled){
             if(balls.length > 0) {
                 let newVy;
