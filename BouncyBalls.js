@@ -64,7 +64,6 @@ class Circle {
         this.vy = this.vyCached;
         this.ay = this.ayCached;
     }
-    // TODO center the text on the buttons.
     update(elapsedSec) {
         // ball-paddle collisions
         let collided = false;
@@ -326,10 +325,11 @@ class Button {
         ctx.beginPath();
         ctx.roundRect(this.x, this.y, this.w, this.h, 10);
         ctx.fill();
-        ctx.font = (0.5*this.h).toString() + "px Arial";
+        const fontSize = 0.5*this.h;
+        ctx.font = fontSize.toString() + "px Arial";
         ctx.fillStyle = "#FFFFFF";
         // Text's x, y coordinate is the bottom left corner.
-        ctx.fillText(this.text, this.x + 0.15*this.h, this.y + 0.70*this.h);
+        ctx.fillText(this.text, this.x + 0.5*this.w - 0.25*fontSize*this.text.length, this.y + 0.70*this.h);
     }
 }
 const buttonWidth = 0.4*canvas.width;
