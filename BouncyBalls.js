@@ -244,17 +244,30 @@ document.addEventListener('keyup', (event) => {
             togglePaused();
             break;
         case 'w':
+            if(cpuLeftPaddle) break;
+            if(leftPaddle.vy < 0) {
+                leftPaddle.vy = 0;
+                leftPaddle.vyCached = 0;
+            }
+            break;
         case 's':
             if(cpuLeftPaddle) break;
-            leftPaddle.vy = 0;
-            leftPaddle.vyCached = 0;
+            if(leftPaddle.vy > 0) {
+                leftPaddle.vy = 0;
+                leftPaddle.vyCached = 0;
+            }
             break;
-        case 'i':
-        case 'k':
         case 'ArrowUp':
+            if(rightPaddle.vy < 0) {
+                rightPaddle.vy = 0;
+                rightPaddle.vyCached = 0;
+            }
+            break;
         case 'ArrowDown':
-            rightPaddle.vy = 0;
-            rightPaddle.vyCached = 0;
+            if(rightPaddle.vy > 0) {
+                rightPaddle.vy = 0;
+                rightPaddle.vyCached = 0;
+            }
             break;
     }
 });
@@ -271,12 +284,10 @@ document.addEventListener('keydown', (event) => {
             if(!paused) leftPaddle.vy = paddleSpeed;
             else leftPaddle.vyCached = paddleSpeed;
             break;
-        case 'i':
         case 'ArrowUp':
             if(!paused) rightPaddle.vy = -paddleSpeed;
             else rightPaddle.vyCached = -paddleSpeed;
             break;
-        case 'k':
         case 'ArrowDown':
             if(!paused) rightPaddle.vy = paddleSpeed;
             else rightPaddle.vyCached = paddleSpeed;
