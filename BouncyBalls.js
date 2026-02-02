@@ -64,6 +64,8 @@ class Circle {
         this.vy = this.vyCached;
         this.ay = this.ayCached;
     }
+    // TODO fix extreme speed when sandwiching ball between paddle and wall
+    // TODO center the text on the buttons.
     update(elapsedSec) {
         // ball-paddle collisions
         let collided = false;
@@ -371,6 +373,7 @@ function startGame(isSinglePlayer) {
             " Refresh the page to restart."
         : "Press <b>p</b> to play/pause, <b>up/down</b> arrows for right paddle, <b>w/s</b> for left paddle."+
             " Refresh the page to restart."
+    buttons = [];
 }
 
 function spawnBall() {
