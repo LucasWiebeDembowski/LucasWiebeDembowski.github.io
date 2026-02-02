@@ -64,7 +64,6 @@ class Circle {
         this.vy = this.vyCached;
         this.ay = this.ayCached;
     }
-    // TODO fix extreme speed when sandwiching ball between paddle and wall
     // TODO center the text on the buttons.
     update(elapsedSec) {
         // ball-paddle collisions
@@ -79,7 +78,7 @@ class Circle {
                 if(this.y <= paddle.y + paddle.h
                     && this.y >= paddle.y - this.radius
                 ) { // bounce off the top
-                    if(paddle.vy < 0) {
+                    if(paddle.vy < 0 && paddle.y + elapsedSec * paddle.vy > paddle.w) { // margin of paddle.w, see Rectangle
                         this.vy = paddle.vy - Math.abs(this.vy);
                     }else {
                         this.vy = -Math.abs(this.vy);
@@ -88,7 +87,7 @@ class Circle {
                 } else if(this.y <= paddle.y + paddle.h + this.radius
                     && this.y >= paddle.y
                 ) { // bounce off the bottom
-                    if(paddle.vy > 0) {
+                    if(paddle.vy > 0 && paddle.y + paddle.h + elapsedSec * paddle.vy < canvas.height - paddle.w) {
                         this.vy = paddle.vy + Math.abs(this.vy);
                     }else {
                         this.vy = Math.abs(this.vy);
