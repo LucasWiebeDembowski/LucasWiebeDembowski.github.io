@@ -367,18 +367,19 @@ canvas.addEventListener("touchmove", handleTouch);
 function handleTouch(event) {
     event.preventDefault(); // prevent scrolling and refreshing
     const rect = canvas.getBoundingClientRect();
-    const touch = event.touches[0];
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-    if(state == STATE_PLAY) {
-        if(x > 0.5*canvas.width) {
-            rightPaddle.y = y - 0.5*rightPaddle.h;
-        }else if(!cpuLeftPaddle) {
-            leftPaddle.y = y - 0.5*leftPaddle.h;
-        }
-    }else if(state == STATE_START) {
-        for(const button of buttons) {
-            button.handleMouseInput(x, y);
+    for(const touch of event.touches) {
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        if(state == STATE_PLAY) {
+            if(x > 0.5*canvas.width) {
+                rightPaddle.y = y - 0.5*rightPaddle.h;
+            }else if(!cpuLeftPaddle) {
+                leftPaddle.y = y - 0.5*leftPaddle.h;
+            }
+        }else if(state == STATE_START) {
+            for(const button of buttons) {
+                button.handleMouseInput(x, y);
+            }
         }
     }
 }
