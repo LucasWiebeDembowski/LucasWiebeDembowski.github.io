@@ -367,12 +367,17 @@ canvas.addEventListener("touchmove", handleTouch);
 function handleTouch(event) {
     event.preventDefault(); // stop scrolling
     const rect = canvas.getBoundingClientRect();
-    const touch = event.touches[0];
-
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-
-    rightPaddle.y = y - 0.5*rightPaddle.h;
+    if(state == STATE_PLAY) {
+        const touch = event.touches[0];
+        const y = touch.clientY - rect.top;
+        rightPaddle.y = y - 0.5*rightPaddle.h;
+    }else {
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        for(const button of buttons) {
+            button.handleMouseInput(x, y);
+        }
+    }
 }
 
 function startGame(isSinglePlayer) {
