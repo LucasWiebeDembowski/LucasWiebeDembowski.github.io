@@ -30,7 +30,7 @@ const mouse = {
 };
 
 let cpuLeftPaddle = true;
-let darkMode = true;
+let darkMode = false;
 let colours = darkMode
     ? ["#009900", "#FF0000", "#0044FF"]
     : ["#005500", "#AA0000", "#0000AA"];
@@ -360,6 +360,20 @@ canvas.addEventListener("mousemove", function(event) {
     mouse.x = event.clientX - rect.left;
     mouse.y = event.clientY - rect.top;
 });
+
+canvas.addEventListener("touchstart", handleTouch);
+canvas.addEventListener("touchmove", handleTouch);
+
+function handleTouch(event) {
+    event.preventDefault(); // stop scrolling
+    const rect = canvas.getBoundingClientRect();
+    const touch = event.touches[0];
+
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    rightPaddle.y = y - 0.5*rightPaddle.h;
+}
 
 function startGame(isSinglePlayer) {
     cpuLeftPaddle = isSinglePlayer;
