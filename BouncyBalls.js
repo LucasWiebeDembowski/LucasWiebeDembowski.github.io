@@ -30,6 +30,7 @@ const mouse = {
 };
 
 let cpuLeftPaddle = true;
+let mouseControlledPaddle = false;
 let darkMode = true;
 let colours = darkMode
     ? ["#009900", "#FF0000", "#0044FF"]
@@ -78,16 +79,16 @@ class Circle {
                     && this.y >= paddle.y - this.radius
                 ) { // bounce off the top
                     this.vy = -Math.abs(this.vy);
-                    if(paddle.y - paddle.prevY < 0) {
-                        this.vy += (paddle.y - paddle.prevY) / elapsedSec;
+                    if(paddle.prevY - paddle.prevprevY < 0) {
+                        this.vy += (paddle.prevY - paddle.prevprevY) / elapsedSec;
                     }
                     this.y = paddle.y - this.radius; // move ball outside so this code isn't run two frames in a row.
                 } else if(this.y <= paddle.y + paddle.h + this.radius
                     && this.y >= paddle.y
                 ) { // bounce off the bottom
                     this.vy = Math.abs(this.vy);
-                    if(paddle.y - paddle.prevY > 0) {
-                        this.vy += (paddle.y - paddle.prevY) / elapsedSec;
+                    if(paddle.prevY - paddle.prevprevY > 0) {
+                        this.vy += (paddle.prevY - paddle.prevprevY) / elapsedSec;
                     }
                     this.y = paddle.y + paddle.h + this.radius;
                 }
@@ -163,6 +164,7 @@ class Rectangle {
         this.x = x;
         this.y = y;
         this.prevY = this.y;
+        this.prevprevY = this.y;
         this.vx = vx;
         this.vy = vy;
         this.w = w;
@@ -184,6 +186,11 @@ class Rectangle {
         this.vy = this.vyCached;
     }
     update(elapsedSec) {
+        // Mouse/touch events can happen during a frame
+        // and sampled at a faster rate than the actual mouse,
+        // so we need to register both the previous Y values every frame,
+        // otherwise the velocity is sometimes incorrectly calculated to be 0.
+        this.prevprevY = this.prevY;
         this.prevY = this.y;
         if(!paused && this.cpuControlled){
             if(balls.length > 0) {
@@ -355,10 +362,28 @@ canvas.addEventListener('mousedown', function(event) {
     }
 });
 
+function movePaddle(paddle, inputY) {
+    const y = inputY - 0.5*paddle.h;
+    if(y < paddle.w) {
+        paddle.y = paddle.w;
+    }else if(y + paddle.h > canvas.height - paddle.w) {
+        paddle.y = canvas.height - paddle.h - paddle.w;
+    }else {
+        paddle.y = y;
+    }
+}
+
 canvas.addEventListener("mousemove", function(event) {
     const rect = canvas.getBoundingClientRect();
     mouse.x = event.clientX - rect.left;
     mouse.y = event.clientY - rect.top;
+    if(mouseControlledPaddle && state == STATE_PLAY) {
+        if(mouse.x > 0.5*canvas.width) {
+            movePaddle(rightPaddle, mouse.y);
+        }else if(!cpuLeftPaddle){
+            movePaddle(leftPaddle, mouse.y);
+        }
+    }
 });
 
 canvas.addEventListener("touchstart", handleTouch);
@@ -372,9 +397,9 @@ function handleTouch(event) {
         const y = touch.clientY - rect.top;
         if(state == STATE_PLAY) {
             if(x > 0.5*canvas.width) {
-                rightPaddle.y = y - 0.5*rightPaddle.h;
+                movePaddle(rightPaddle, y);
             }else if(!cpuLeftPaddle) {
-                leftPaddle.y = y - 0.5*leftPaddle.h;
+                movePaddle(leftPaddle, y);
             }
         }else if(state == STATE_START) {
             for(const button of buttons) {
