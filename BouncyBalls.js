@@ -396,9 +396,9 @@ function startGame(isSinglePlayer) {
     togglePaused();
     spawnRequestTimestamp = Date.now();
     document.getElementById("instructions").innerHTML = cpuLeftPaddle
-        ? "Press <b>p</b> to play/pause, <b>up/down</b> arrows for right paddle, left paddle computer-controlled."+
+        ? "Press <b>p</b> to play/pause, <b>up/down</b> arrows or touchscreen for right paddle. Left paddle computer-controlled."+
             " Refresh the page to restart."
-        : "Press <b>p</b> to play/pause, <b>up/down</b> arrows for right paddle, <b>w/s</b> for left paddle."+
+        : "Press <b>p</b> to play/pause, <b>up/down</b> arrows or touchscreen for right paddle, <b>w/s</b> or touchscreen for left paddle."+
             " Refresh the page to restart."
     buttons = [];
 }
