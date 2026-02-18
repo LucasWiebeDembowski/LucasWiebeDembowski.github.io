@@ -77,12 +77,18 @@ class Circle {
                 if(this.y <= paddle.y + paddle.h
                     && this.y >= paddle.y - this.radius
                 ) { // bounce off the top
-                    this.vy = -Math.abs(this.vy) + (paddle.y - paddle.prevY) / elapsedSec;
+                    this.vy = -Math.abs(this.vy);
+                    if(paddle.y - paddle.prevY < 0) {
+                        this.vy += (paddle.y - paddle.prevY) / elapsedSec;
+                    }
                     this.y = paddle.y - this.radius; // move ball outside so this code isn't run two frames in a row.
                 } else if(this.y <= paddle.y + paddle.h + this.radius
                     && this.y >= paddle.y
                 ) { // bounce off the bottom
-                    this.vy = Math.abs(this.vy) + (paddle.y - paddle.prevY) / elapsedSec;
+                    this.vy = Math.abs(this.vy);
+                    if(paddle.y - paddle.prevY > 0) {
+                        this.vy += (paddle.y - paddle.prevY) / elapsedSec;
+                    }
                     this.y = paddle.y + paddle.h + this.radius;
                 }
             } else if(this.x + this.radius + elapsedSec * this.vx > paddle.x
