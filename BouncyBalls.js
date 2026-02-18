@@ -77,20 +77,12 @@ class Circle {
                 if(this.y <= paddle.y + paddle.h
                     && this.y >= paddle.y - this.radius
                 ) { // bounce off the top
-                    if(paddle.vy < 0 && paddle.y + elapsedSec * paddle.vy > paddle.w) { // margin of paddle.w, see Rectangle
-                        this.vy = paddle.vy - Math.abs(this.vy);
-                    }else {
-                        this.vy = -Math.abs(this.vy);
-                    }
+                    this.vy = -Math.abs(this.vy) + (paddle.y - paddle.prevY) / elapsedSec;
                     this.y = paddle.y - this.radius; // move ball outside so this code isn't run two frames in a row.
                 } else if(this.y <= paddle.y + paddle.h + this.radius
                     && this.y >= paddle.y
                 ) { // bounce off the bottom
-                    if(paddle.vy > 0 && paddle.y + paddle.h + elapsedSec * paddle.vy < canvas.height - paddle.w) {
-                        this.vy = paddle.vy + Math.abs(this.vy);
-                    }else {
-                        this.vy = Math.abs(this.vy);
-                    }
+                    this.vy = Math.abs(this.vy) + (paddle.y - paddle.prevY) / elapsedSec;
                     this.y = paddle.y + paddle.h + this.radius;
                 }
             } else if(this.x + this.radius + elapsedSec * this.vx > paddle.x
@@ -164,6 +156,7 @@ class Rectangle {
     constructor(x,y,vx,vy,w,h,cpuControlled) {
         this.x = x;
         this.y = y;
+        this.prevY = this.y;
         this.vx = vx;
         this.vy = vy;
         this.w = w;
@@ -185,6 +178,7 @@ class Rectangle {
         this.vy = this.vyCached;
     }
     update(elapsedSec) {
+        this.prevY = this.y;
         if(!paused && this.cpuControlled){
             if(balls.length > 0) {
                 let newVy;
