@@ -3,10 +3,12 @@
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
 
-canvas.height = window.innerHeight * 0.8;
-canvas.width = window.innerWidth * 0.95;
+// Easier to keep game mechanics consistent if the resolution is hardcoded.
+const resolution = 4.0/3.0;
+canvas.width = Math.min(window.innerWidth * 0.98, 0.9 * window.innerHeight * resolution);
+canvas.height = canvas.width / resolution;
 
-const ballSpeed = 0.5*canvas.height;
+const ballSpeed = 0.45*canvas.width;
 const rectHeight = 0.15*canvas.height;
 const paddleSpeed = 2*ballSpeed;
 
@@ -291,10 +293,12 @@ document.addEventListener('keydown', (event) => {
             else leftPaddle.vyCached = paddleSpeed;
             break;
         case 'ArrowUp':
+            event.preventDefault(); // prevent scrolling
             if(!paused) rightPaddle.vy = -paddleSpeed;
             else rightPaddle.vyCached = -paddleSpeed;
             break;
         case 'ArrowDown':
+            event.preventDefault(); // prevent scrolling
             if(!paused) rightPaddle.vy = paddleSpeed;
             else rightPaddle.vyCached = paddleSpeed;
             break;
